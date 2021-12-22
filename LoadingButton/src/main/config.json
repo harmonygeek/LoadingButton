@@ -1,0 +1,25 @@
+{
+  "app": {
+    "bundleName": "com.snad.sample",
+    "vendor": "snad",
+    "version": {
+      "code": 1000000,
+      "name": "1.0.0"
+    }
+  },
+  "deviceConfig": {
+  },
+  "module": {
+    "package": "com.snad.loadingbutton",
+    "deviceType": [
+      "phone",
+      "tablet",
+      "tv"
+    ],
+    "distro": {
+      "deliveryWithInstall": true,
+      "moduleName": "loadingbutton",
+      "moduleType": "har"
+    }
+  }
+}

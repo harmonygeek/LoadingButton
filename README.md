@@ -1,54 +1,64 @@
-# LoadingButton [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-LoadingButton-green.svg?style=flat)](https://android-arsenal.com/details/1/1926)
+# LoadingButton
 
-LoadingButton is a custom view that shows and hides a ProgressBar with text animation. You can specify the text animation direction.
+LoadingButton is a custom view that shows and hides a ProgressBar with text. 
 
 ![LoadingButton](https://github.com/snadjafi/LoadingButton/blob/master/images/screenshot.png)
 
 ## Sample Usage
 
 ```xml
-<com.snad.loadingbutton.LoadingButton
-    android:id="@+id/first"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="#BE6E46"
-    app:pbLoadingText="@string/loading"
-    app:pbProgressColor="#F9D8FB"
-    app:pbText="@string/click_me"
-    app:pbTextColor="#8A4FFF"
-    app:pbTextSize="16sp"/>
+   <com.snad.loadingbutton.LoadingButton
+        ohos:id="$+id:first"
+        ohos:height="match_content"
+        ohos:width="match_parent"
+        ohos:background_element="#BE6E46"
+        app:pbLoadingText="$string:loading"
+        app:pbProgressColor="#F9D8FB"
+        app:pbText="$string:click_me"
+        app:pbTextColor="#8A4FFF"
+        app:pbTextSize="26fp"
+        />
 ```
 
 ```java
-@Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
-    findViewById(R.id.first).setOnClickListener(this);
+   @Override
+    public void onStart(Intent intent) {
+        super.onStart(intent);
+        
+        ComponentContainer rootLayout = (ComponentContainer) LayoutScatter.getInstance(this)
+                .parse(ResourceTable.Layout_ability_main, null, false);
 
-    LoadingButton button = new LoadingButton(this);
-    LoadingButton.ViewSwitcherFactory factory = new LoadingButton.ViewSwitcherFactory(this,
-            getResources().getColor(android.R.color.white),
-            44F,
-            Typeface.DEFAULT);
-    button.setTextFactory(factory);
+        rootLayout.findComponentById(ResourceTable.Id_first).setClickedListener(this);
+        rootLayout.findComponentById(ResourceTable.Id_second).setClickedListener(this);
 
-    button.setText("Press");
-    button.setLoadingText("wait...");
-    button.setBackgroundColor(Color.RED);
-    button.setOnClickListener(this);
-    button.setAnimationInDirection(LoadingButton.IN_FROM_LEFT);
-    ((ViewGroup) findViewById(R.id.root)).addView(button);
-}
+        LoadingButton button = new LoadingButton(this);
+        button.setText("Press");
+        button.setLoadingText("wait...");
 
-@Override public void onClick(final View v) {
-    ((LoadingButton) v).showLoading();
+        ShapeElement shapeElement = new ShapeElement();
+        shapeElement.setRgbColor(new RgbColor(0xFF, 0, 0));
+        shapeElement.setShape(ShapeElement.RECTANGLE);
+        button.setBackground( shapeElement);
+        button.setClickedListener(this);
 
-    v.postDelayed(new Runnable() {
-        @Override public void run() {
-            ((LoadingButton) v).showButtonText();
-        }
-    }, 2000);
-}
+        ((ComponentContainer)rootLayout.findComponentById(ResourceTable.Id_root)).addComponent( button);
+
+        super.setUIContent( rootLayout);
+    }
+    	
+    @Override
+    public void onClick(Component component) {
+
+        ((LoadingButton) component).showLoading();
+        TaskDispatcher dispatcher = context.getUITaskDispatcher();
+        Revocable revocable = dispatcher.delayDispatch(new Runnable() {
+            @Override
+            public void run() {
+                ((LoadingButton) component).showButtonText();
+            }
+        }, 2000);
+
+    }
 ```
 
 ##License

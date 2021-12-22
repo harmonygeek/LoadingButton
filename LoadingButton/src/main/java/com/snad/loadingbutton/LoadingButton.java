@@ -1,79 +1,52 @@
 package com.snad.loadingbutton;
 
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.PorterDuff;
-import android.graphics.Typeface;
-import android.support.annotation.ColorRes;
-import android.support.annotation.NonNull;
-import android.util.AttributeSet;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextSwitcher;
-import android.widget.TextView;
-import android.widget.ViewSwitcher;
+import com.snad.loadingbutton.util.ResUtil;
+import ohos.agp.components.*;
+import ohos.agp.utils.Color;
+import ohos.app.Context;
 
-public class LoadingButton extends RelativeLayout {
-
-    //region Variables
-    static final int DEFAULT_COLOR = android.R.color.white;
-    public static final int IN_FROM_RIGHT = 0;
-    public static final int IN_FROM_LEFT = 1;
-
+public class LoadingButton extends DependentLayout {
+    private Context context;
+    private ComponentContainer rootLayout;
+    private RoundProgressBar mProgressBar;
+    private Text mTextField;
     private int mDefaultTextSize;
-    private ProgressBar mProgressBar;
-    private TextSwitcher mTextSwitcher;
     private String mLoadingMessage;
     private String mButtonText;
     private float mTextSize;
     private int mTextColor;
     private boolean mIsLoadingShowing;
-    private Typeface mTypeface;
-    private Animation inRight;
-    private Animation inLeft;
     private int mCurrentInDirection;
     private boolean mTextSwitcherReady;
-    //endregion
+    private Color DEFAULT_COLOR =Color.WHITE;
 
-    //region Constructors
+
     public LoadingButton(Context context) {
-        super(context);
-        init(context, null);
+        this(context, null);
+    }
+    public LoadingButton(Context context, AttrSet attrs) {
+        this(context, attrs,"");
     }
 
-    public LoadingButton(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
-    }
-
-    public LoadingButton(Context context, AttributeSet attrs, int defStyleAttr) {
+    public LoadingButton(Context context, AttrSet attrs, String defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context, attrs);
+
+        this.context =context;
+        init(attrs);
     }
-    //endregion
 
     public float getTextSize() {
         return mTextSize;
     }
 
-    public Typeface getTypeface() {
-        return mTypeface;
-    }
 
     public void setProgressColor(int colorRes) {
-        mProgressBar.getIndeterminateDrawable()
-                .mutate()
-                .setColorFilter(colorRes, PorterDuff.Mode.SRC_ATOP);
+        int color = ResUtil.getColor(context, colorRes);
+        mProgressBar.setProgressColor( new Color( color));
     }
 
-    public void setTypeface(@NonNull Typeface typeface) {
-        this.mTypeface = typeface;
+    public void setProgressColor(Color color) {
+        mProgressBar.setProgressColor( color);
     }
 
     public void setAnimationInDirection(int inDirection) {
@@ -83,9 +56,8 @@ public class LoadingButton extends RelativeLayout {
     public void setText(String text) {
         if (text != null) {
             mButtonText = text;
-            if (mTextSwitcherReady) {
-                mTextSwitcher.setInAnimation(mCurrentInDirection == IN_FROM_LEFT ? inLeft : inRight);
-                mTextSwitcher.setText(mButtonText);
+            if (null!= mTextField) {
+                mTextField.setText(mButtonText);
             }
         }
     }
@@ -96,16 +68,10 @@ public class LoadingButton extends RelativeLayout {
         }
     }
 
-    public void setTextFactory(@NonNull ViewSwitcherFactory factory) {
-        mTextSwitcher.removeAllViewsInLayout();
-        mTextSwitcher.setFactory(factory);
-        mTextSwitcher.setText(mButtonText);
-    }
-
     public void showLoading() {
         if (!mIsLoadingShowing) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            mTextSwitcher.setText(mLoadingMessage);
+            mProgressBar.setVisibility(Component.VISIBLE);
+            mTextField.setText(mLoadingMessage);
             mIsLoadingShowing = true;
             setEnabled(false);
         }
@@ -113,8 +79,8 @@ public class LoadingButton extends RelativeLayout {
 
     public void showButtonText() {
         if (mIsLoadingShowing) {
-            mProgressBar.setVisibility(View.INVISIBLE);
-            mTextSwitcher.setText(mButtonText);
+            mProgressBar.setVisibility(Component.INVISIBLE);
+            mTextField.setText(mButtonText);
             mIsLoadingShowing = false;
             setEnabled(true);
         }
@@ -124,101 +90,60 @@ public class LoadingButton extends RelativeLayout {
         return mIsLoadingShowing;
     }
 
-    private void init(Context context, AttributeSet attrs) {
-        mDefaultTextSize = getResources().getDimensionPixelSize(R.dimen.text_default_size);
+    private void init(AttrSet attrset) {
+        mDefaultTextSize = (int)ResUtil.getDimen(context, ResourceTable.Float_text_default_size);
         mIsLoadingShowing = false;
-        LayoutInflater.from(getContext()).inflate(R.layout.view_loading_button, this, true);
+        rootLayout = (ComponentContainer) LayoutScatter.getInstance(context)
+                .parse(ResourceTable.Layout_component_loading_button, null, false);
 
-        mProgressBar = (ProgressBar) findViewById(R.id.pb_progress);
-        mTextSwitcher = (TextSwitcher) findViewById(R.id.pb_text);
+        mProgressBar = (RoundProgressBar)rootLayout.findComponentById(ResourceTable.Id_roundprogress);
+        mTextField = (Text)rootLayout.findComponentById(ResourceTable.Id_text1);
 
+        if(null != attrset)
+        {
 
-        if (attrs != null) {
-            TypedArray a = context.getTheme().obtainStyledAttributes(
-                    attrs,
-                    R.styleable.LoadingButton,
-                    0, 0);
-            try {
-                float textSize = a.getDimensionPixelSize(R.styleable.LoadingButton_pbTextSize, mDefaultTextSize);
-                setTextSize(textSize);
+            float textSize = attrset.getAttr("pbTextSize").isPresent() ?
+                    attrset.getAttr("pbTextSize").get().getDimensionValue() :mDefaultTextSize;
+            setTextSize(textSize);
 
-                String text = a.getString(R.styleable.LoadingButton_pbText);
-                setText(text);
+            String text = attrset.getAttr("pbText").isPresent() ?
+                    attrset.getAttr("pbText").get().getStringValue() :"";
+            setText(text);
 
-                mLoadingMessage = a.getString(R.styleable.LoadingButton_pbLoadingText);
+            mLoadingMessage = attrset.getAttr("pbLoadingText").isPresent() ?
+                    attrset.getAttr("pbLoadingText").get().getStringValue() : null;
 
-                if (mLoadingMessage == null) {
-                    mLoadingMessage = getContext().getString(R.string.default_loading);
-                }
-
-                int progressColor = a.getColor(R.styleable.LoadingButton_pbProgressColor, DEFAULT_COLOR);
-                setProgressColor(progressColor);
-
-                int textColor = a.getColor(R.styleable.LoadingButton_pbTextColor, DEFAULT_COLOR);
-                setTextColor(textColor);
-
-            } finally {
-                a.recycle();
+            if (mLoadingMessage == null) {
+                mLoadingMessage = ResUtil.getString(context, ResourceTable.String_default_loading);
             }
-        } else {
-            int white = getResources().getColor(DEFAULT_COLOR);
-            mLoadingMessage = getContext().getString(R.string.default_loading);
-            setProgressColor(white);
-            setTextColor(white);
-            setTextSize(mDefaultTextSize);
-        }
-        setupTextSwitcher();
+
+            Color progressColor = attrset.getAttr("pbProgressColor").isPresent() ?
+                    attrset.getAttr("pbProgressColor").get().getColorValue() :DEFAULT_COLOR;
+            setProgressColor(progressColor);
+
+            Color textColor = attrset.getAttr("pbTextColor").isPresent() ?
+                    attrset.getAttr("pbTextColor").get().getColorValue() :DEFAULT_COLOR;
+            setTextColor(textColor.getValue());
+
+    } else {
+        mLoadingMessage = ResUtil.getString(context, ResourceTable.String_default_loading);
+        setProgressColor( DEFAULT_COLOR);
+        setTextColor( DEFAULT_COLOR.getValue());
+        setTextSize(mDefaultTextSize);
     }
 
-    private void setupTextSwitcher() {
-        ViewSwitcherFactory factory = new ViewSwitcherFactory(getContext(), mTextColor, mTextSize, mTypeface);
-        mTextSwitcher.setFactory(factory);
-
-        inRight = AnimationUtils.loadAnimation(getContext(), R.anim.slide_in_right);
-        inLeft = AnimationUtils.loadAnimation(getContext(), R.anim.slide_in_left);
-        Animation out = AnimationUtils.loadAnimation(getContext(), R.anim.fade_out);
-        mTextSwitcher.setOutAnimation(out);
-        mTextSwitcher.setInAnimation(inRight);
-
-        mTextSwitcher.setText(mButtonText);
-        mTextSwitcherReady = true;
+        super.addComponent( rootLayout);
     }
 
     private void setTextSize(float size) {
         mTextSize = size;
+        mTextField.setTextSize( (int)mTextSize);
     }
 
     private void setTextColor(int textColor) {
-        this.mTextColor = textColor;
+        mTextColor = textColor;
+        mTextField.setTextColor( new Color(mTextColor));
     }
 
-    public static class ViewSwitcherFactory implements ViewSwitcher.ViewFactory {
 
-        //region Variables
-        private final int textColor;
-        private final float textSize;
-        private final Typeface typeFace;
-        private final Context context;
-        //endregion
-
-        //region Constructor
-        public ViewSwitcherFactory(Context context, int textColor, float textSize, Typeface typeface) {
-            this.context = context;
-            this.textColor = textColor;
-            this.textSize = textSize;
-            this.typeFace = typeface;
-        }
-        //endregion
-
-        @Override
-        public View makeView() {
-            TextView tv = new TextView(context);
-            tv.setTextColor(textColor);
-            tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-            tv.setGravity(Gravity.CENTER);
-            tv.setTypeface(typeFace);
-
-            return tv;
-        }
-    }
 }

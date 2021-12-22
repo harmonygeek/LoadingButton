@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DirectionalLayout
+    xmlns:ohos="http://schemas.huawei.com/res/ohos"
+    xmlns:app="http://schemas.huawei.com/hap/res-auto"
+    ohos:id="$+id:root"
+    ohos:height="match_parent"
+    ohos:width="match_parent"
+    ohos:alignment="center"
+    ohos:orientation="vertical"
+    ohos:padding="16vp">
+
+    <com.snad.loadingbutton.LoadingButton
+        ohos:id="$+id:first"
+        ohos:height="match_content"
+        ohos:width="match_parent"
+        ohos:background_element="#BE6E46"
+        app:pbLoadingText="$string:loading"
+        app:pbProgressColor="#F9D8FB"
+        app:pbText="$string:click_me"
+        app:pbTextColor="#8A4FFF"
+        app:pbTextSize="26fp"
+        />
+
+    <com.snad.loadingbutton.LoadingButton
+        ohos:id="$+id:second"
+        ohos:height="match_content"
+        ohos:width="match_parent"
+        ohos:top_margin="25vp"
+        ohos:bottom_margin="25vp"
+        ohos:background_element="#FFE548"
+        app:pbLoadingText="LOGIN"
+        app:pbProgressColor="#582707"
+        app:pbText="CLICK"
+        app:pbTextColor="#7286A0"
+        app:pbTextSize="26fp"
+        />
+
+</DirectionalLayout>

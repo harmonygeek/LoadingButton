@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "entry_MainAbility",
+      "value": "entry_MainAbility"
+    },
+    {
+      "name": "mainability_description",
+      "value": "Java_Empty Ability"
+    },
+    {
+      "name": "loading",
+      "value": "LOADING "
+    },
+    {
+      "name": "click_me",
+      "value": "CLICK ME"
+    }
+  ]
+}

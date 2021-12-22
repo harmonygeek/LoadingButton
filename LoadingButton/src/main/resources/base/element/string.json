@@ -1,0 +1,12 @@
+{
+  "string": [
+    {
+      "name": "loadingbutton_library",
+      "value": "loadingbutton_library"
+    },
+    {
+      "name": "default_loading",
+      "value": "Loading…"
+    }
+  ]
+}
